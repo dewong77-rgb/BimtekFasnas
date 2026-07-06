@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RTL Rakornas - Direktorat SMA</title>
+<title>RTL Bimtek Fasnas - Direktorat SMA</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
@@ -98,7 +98,7 @@
 
 <div class="header">
   <h1>LEMBAR KERJA RENCANA TINDAK LANJUT (RTL)</h1>
-  <p id="kategoriLabel">Peserta Rakornas - Direktorat SMA, Kemendikdasmen</p>
+  <p id="kategoriLabel">Peserta Bimtek Fasnas - Direktorat SMA, Kemendikdasmen</p>
   <div class="accent"></div>
 </div>
 
@@ -228,7 +228,7 @@ const kategoriLabel = document.getElementById('kategoriLabel');
 function applyKategori(){
   const k = kategoriSel.value;
   tujuanBox.value = TUJUAN_TEXT[k];
-  kategoriLabel.textContent = KATEGORI_LABEL[k] + " - Rakornas Direktorat SMA, Kemendikdasmen";
+  kategoriLabel.textContent = KATEGORI_LABEL[k] + " - Bimtek Fasnas Direktorat SMA, Kemendikdasmen";
 }
 kategoriSel.addEventListener('change', applyKategori);
 applyKategori();
@@ -417,7 +417,7 @@ function generatePDF(data){
   doc.text('LEMBAR KERJA RENCANA TINDAK LANJUT (RTL)', pageW/2, 9, { align: 'center' });
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text(KATEGORI_LABEL[data.kategori] + ' - Rakornas Direktorat SMA, Kemendikdasmen', pageW/2, 15, { align: 'center' });
+  doc.text(KATEGORI_LABEL[data.kategori] + ' - Bimtek Fasnas Direktorat SMA, Kemendikdasmen', pageW/2, 15, { align: 'center' });
 
   // gold accent
   doc.setFillColor(232, 160, 32);
