@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rakornas - Direktorat SMA</title>
+<style>
+  :root{
+    --navy:#1A3E6F;
+    --gold:#E8A020;
+    --gray:#4A4A4A;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; padding:0; min-height:100vh;
+    font-family:"Segoe UI", Arial, sans-serif;
+    background:#F5F6F8; color:var(--gray);
+    display:flex; flex-direction:column;
+  }
+  .header{
+    background:var(--navy); color:#fff;
+    padding:28px 16px 20px; text-align:center;
+  }
+  .header h1{margin:0; font-size:20px; font-weight:700;}
+  .header p{margin:6px 0 0; font-size:13px; opacity:.9;}
+  .header .accent{height:4px; width:40%; background:var(--gold); margin:12px auto 0;}
+  .menu{
+    flex:1; max-width:480px; margin:0 auto; padding:32px 16px;
+    display:flex; flex-direction:column; gap:16px; width:100%;
+  }
+  .menu-card{
+    display:block; background:#fff; border:1px solid #ccc; border-radius:8px;
+    padding:20px; text-decoration:none; color:inherit;
+    transition:box-shadow .15s, transform .15s;
+  }
+  .menu-card:hover{box-shadow:0 4px 14px rgba(0,0,0,.08); transform:translateY(-2px);}
+  .menu-card h2{
+    margin:0 0 6px; font-size:16px; color:var(--navy);
+    border-bottom:2px solid var(--gold); padding-bottom:6px; display:inline-block;
+  }
+  .menu-card p{margin:0; font-size:13px; color:#666;}
+  footer{text-align:center; font-size:11px; color:#999; padding:16px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>RAKORNAS DIREKTORAT SMA</h1>
+  <p>Kemendikdasmen - Pilih formulir yang ingin diisi</p>
+  <div class="accent"></div>
+</div>
+
+<div class="menu">
+  <a class="menu-card" href="rtl-litnum.html">
+    <h2>RTL Literasi dan Numerasi (LITNUM)</h2>
+    <p>RTL untuk peserta Bimtek Penguatan Literasi dan Numerasi — Fasnas, Fasda, dan Guru.</p>
+  </a>
+
+  <a class="menu-card" href="rtl-lit-paud.html">
+    <h2>RTL Literasi Dasar Pendidik PAUD</h2>
+    <p>RTL untuk peserta Bimtek Literasi Dasar Pendidik PAUD.</p>
+  </a>
+
+  <a class="menu-card" href="rtl-digitalisasi.html">
+    <h2>RTL Digitalisasi Pembelajaran</h2>
+    <p>RTL untuk peserta Bimtek Digitalisasi Pembelajaran untuk penguatan Literasi dan Numerasi.</p>
+  </a>
+
+  <div class="menu-card" style="opacity:.5; cursor:default;">
+    <h2>RTL SPMI</h2>
+    <p>Menyusul.</p>
+  </div>
+
+  <a class="menu-card" href="evaluasi.html">
+    <h2>Evaluasi Penyelenggaraan Kegiatan</h2>
+    <p>Berikan penilaian terhadap penyelenggaraan kegiatan — program, sarana, narasumber, akomodasi, konsumsi, dan layanan.</p>
+  </a>
+
+  <a class="menu-card" href="quiz.html?bank=spmi&fase=pre">
+    <h2>Pretest SPMI</h2>
+    <p>Soal pretest sebelum Bimtek SPMI. 29 soal, dikerjakan sebelum sesi dimulai.</p>
+  </a>
+
+  <a class="menu-card" href="quiz.html?bank=spmi&fase=post">
+    <h2>Posttest SPMI</h2>
+    <p>Soal posttest setelah Bimtek SPMI selesai.</p>
+  </a>
+
+  <a class="menu-card" href="quiz.html?bank=litnum_fasnas&fase=pre">
+    <h2>Pretest LITNUM - Fasda/Fasnas</h2>
+    <p>26 soal, untuk peserta Fasda dan Fasnas.</p>
+  </a>
+
+  <a class="menu-card" href="quiz.html?bank=litnum_fasnas&fase=post">
+    <h2>Posttest LITNUM - Fasda/Fasnas</h2>
+    <p>Soal posttest setelah Bimtek LITNUM (Fasda/Fasnas) selesai.</p>
+  </a>
+
+  <a class="menu-card" href="quiz.html?bank=lit_paud&fase=pre">
+    <h2>Pretest Literasi Dasar PAUD</h2>
+    <p>29 soal, untuk peserta Bimtek Literasi Dasar PAUD.</p>
+  </a>
+
+  <a class="menu-card" href="quiz.html?bank=lit_paud&fase=post">
+    <h2>Posttest Literasi Dasar PAUD</h2>
+    <p>Soal posttest setelah Bimtek Literasi Dasar PAUD selesai.</p>
+  </a>
+
+  <div class="menu-card" style="opacity:.5; cursor:default;">
+    <h2>Pretest/Posttest Digitalisasi</h2>
+    <p>Menyusul — menunggu kunci jawaban dari sumber.</p>
+  </div>
+</div>
+
+<footer>Direktorat SMA | Kemendikdasmen</footer>
+</body>
+</html>
