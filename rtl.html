@@ -110,7 +110,7 @@
 
 <div class="header">
   <h1>LEMBAR KERJA RENCANA TINDAK LANJUT (RTL)</h1>
-  <p id="jenisLabel">Peserta Rakornas - Direktorat SMA, Kemendikdasmen</p>
+  <p id="jenisLabel">Peserta Bimtek Fasnas BOS Kinerja - Direktorat SMA, Kemendikdasmen</p>
   <div class="accent"></div>
 </div>
 
@@ -246,7 +246,7 @@ const jenisLabelEl = document.getElementById('jenisLabel');
 function applyJenis(){
   const k = jenisSel.value;
   tujuanBox.value = TUJUAN_TEXT[k];
-  jenisLabelEl.textContent = JENIS_LABEL[k] + " - Rakornas Direktorat SMA, Kemendikdasmen";
+  jenisLabelEl.textContent = JENIS_LABEL[k] + " - Bimtek Fasnas BOS Kinerja Direktorat SMA, Kemendikdasmen";
 }
 jenisSel.addEventListener('change', applyJenis);
 applyJenis();
@@ -506,7 +506,7 @@ function generatePDF(data){
   doc.text('LEMBAR KERJA RENCANA TINDAK LANJUT (RTL)', pageW/2, 9, { align: 'center' });
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text(JENIS_LABEL[data.jenisBimtek] + ' - Rakornas Direktorat SMA, Kemendikdasmen', pageW/2, 15, { align: 'center' });
+  doc.text(JENIS_LABEL[data.jenisBimtek] + ' - Bimtek Fasnas BOS Kinerja Direktorat SMA, Kemendikdasmen', pageW/2, 15, { align: 'center' });
 
   // gold accent
   doc.setFillColor(232, 160, 32);
