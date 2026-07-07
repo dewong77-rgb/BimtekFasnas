@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RTL - Direktorat SMA</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+  :root{
+    --navy:#1A3E6F;
+    --gold:#E8A020;
+    --gray:#4A4A4A;
+    --border:#CCCCCC;
+    --bg:#F5F6F8;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; padding:0;
+    font-family:"Segoe UI", Arial, sans-serif;
+    background:var(--bg);
+    color:var(--gray);
+  }
+  .header{
+    background:var(--navy);
+    color:#fff;
+    padding:20px 16px 14px;
+    text-align:center;
+    position:relative;
+  }
+  .header h1{margin:0; font-size:19px; font-weight:700; letter-spacing:.3px;}
+  .header p{margin:4px 0 0; font-size:13px; opacity:.9;}
+  .header .accent{
+    height:4px; width:40%; background:var(--gold); margin:10px auto 0;
+  }
+  .wrap{max-width:900px; margin:0 auto; padding:16px;}
+  .card{
+    background:#fff; border:1px solid var(--border); border-radius:6px;
+    padding:16px 18px; margin-bottom:14px;
+  }
+  .card h2{
+    font-size:14px; color:var(--navy); margin:0 0 10px;
+    border-bottom:2px solid var(--gold); padding-bottom:6px; display:inline-block;
+  }
+  label{display:block; font-size:13px; margin:10px 0 4px; font-weight:600;}
+  input[type=text], input[type=email], select, textarea{
+    width:100%; padding:8px 10px; font-size:14px;
+    border:1px solid var(--border); border-radius:4px; font-family:inherit;
+  }
+  textarea{resize:vertical;}
+  .row2{display:flex; gap:12px; flex-wrap:wrap;}
+  .row2 > div{flex:1; min-width:220px;}
+  table.kegiatan{width:100%; border-collapse:collapse; margin-top:8px; font-size:12px;}
+  table.kegiatan th{
+    background:var(--navy); color:#fff; padding:6px; text-align:left; font-size:11px;
+  }
+  table.kegiatan td{
+    border:1px solid var(--border); padding:4px; vertical-align:top;
+  }
+  table.kegiatan td input, table.kegiatan td textarea{
+    border:none; padding:4px; font-size:12px; width:100%;
+  }
+  table.kegiatan td.no-col{width:28px; text-align:center; font-weight:600;}
+  table.kegiatan td.act-col{width:36px; text-align:center;}
+  .btn{
+    background:var(--navy); color:#fff; border:none; padding:9px 16px;
+    border-radius:4px; font-size:13px; cursor:pointer; font-weight:600;
+  }
+  .btn.secondary{background:#fff; color:var(--navy); border:1px solid var(--navy);}
+  .btn.small{padding:4px 8px; font-size:11px;}
+  .btn.danger{background:#c0392b;}
+  .btn:disabled{opacity:.5; cursor:not-allowed;}
+  .tabs{display:flex; gap:6px; margin-bottom:10px;}
+  .tab-btn{
+    flex:1; padding:8px; text-align:center; border:1px solid var(--border);
+    background:#fff; cursor:pointer; font-size:13px; border-radius:4px;
+  }
+  .tab-btn.active{background:var(--navy); color:#fff; border-color:var(--navy);}
+  #sigCanvas{
+    border:1px dashed var(--border); border-radius:4px; width:100%;
+    max-width:500px; height:180px; touch-action:none; display:block; background:#fff;
+  }
+  .sig-panel{display:none;}
+  .sig-panel.active{display:block;}
+  #uploadPreview{max-width:300px; max-height:150px; margin-top:8px; display:none;}
+  .submit-area{text-align:center; padding:10px 0 30px;}
+  #submitBtn{padding:12px 40px; font-size:15px;}
+  .status{
+    text-align:center; padding:12px; border-radius:4px; margin-top:12px; font-size:13px; display:none;
+  }
+  .status.ok{background:#e6f4ea; color:#1e7e34; display:block;}
+  .status.err{background:#fdecea; color:#c0392b; display:block;}
+  .hint{font-size:11px; color:#888; margin-top:2px;}
+  .required:after{content:" *"; color:#c0392b;}
+  a.back{color:var(--navy); font-size:13px; text-decoration:none; display:inline-block; margin-bottom:10px;}
+  .autocomplete-wrap{position:relative;}
+  .suggestions{
+    position:absolute; top:100%; left:0; right:0; background:#fff;
+    border:1px solid var(--border); border-top:none; border-radius:0 0 4px 4px;
+    max-height:200px; overflow-y:auto; z-index:20; display:none;
+  }
+  .suggestions.active{display:block;}
+  .suggestion-item{ padding:8px 10px; font-size:13px; cursor:pointer; border-bottom:1px solid #f0f0f0; }
+  .suggestion-item:last-child{border-bottom:none;}
+  .suggestion-item:hover{background:#F5F6F8;}
+  .suggestion-item .sug-instansi{font-size:11px; color:#888;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>LEMBAR KERJA RENCANA TINDAK LANJUT (RTL)</h1>
+  <p id="jenisLabel">Peserta Rakornas - Direktorat SMA, Kemendikdasmen</p>
+  <div class="accent"></div>
+</div>
+
+<div class="wrap">
+  <a class="back" href="index.html">&larr; Kembali ke menu</a>
+
+  <form id="rtlForm">
+
+    <div class="card">
+      <h2>Data Peserta</h2>
+      <label class="required">Jenis Bimtek</label>
+      <select id="jenisBimtek" required>
+        <option value="spmi">SPMI</option>
+        <option value="litnum">Literasi dan Numerasi</option>
+        <option value="lit_paud">Literasi Dasar Pendidik PAUD</option>
+        <option value="digitalisasi">Digitalisasi Pembelajaran</option>
+      </select>
+
+      <div class="row2">
+        <div class="autocomplete-wrap">
+          <label class="required">Nama</label>
+          <input type="text" id="nama" required autocomplete="off">
+          <div class="suggestions" id="namaSuggestions"></div>
+        </div>
+        <div>
+          <label class="required">Instansi</label>
+          <input type="text" id="instansi" required>
+        </div>
+      </div>
+      <div class="row2">
+        <div>
+          <label class="required">Provinsi</label>
+          <input type="text" id="provinsi" required>
+        </div>
+        <div>
+          <label>Email (opsional, untuk arsip pribadi)</label>
+          <input type="email" id="email">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Tujuan</h2>
+      <textarea id="tujuan" rows="2"></textarea>
+      <p class="hint">Teks otomatis menyesuaikan jenis Bimtek. Bisa diedit kalau kurang sesuai.</p>
+    </div>
+
+    <div class="card">
+      <h2>Program / Kegiatan Tindak Lanjut</h2>
+      <table class="kegiatan" id="kegiatanTable">
+        <thead>
+          <tr>
+            <th class="no-col">No</th>
+            <th style="width:16%">Program/Kegiatan</th>
+            <th style="width:18%">Tujuan</th>
+            <th style="width:12%">Waktu Pelaksanaan</th>
+            <th style="width:12%">Sasaran</th>
+            <th style="width:16%">Indikator Keberhasilan</th>
+            <th style="width:16%">Bukti/Dokumen</th>
+            <th class="act-col"></th>
+          </tr>
+        </thead>
+        <tbody id="kegiatanBody"></tbody>
+      </table>
+      <div style="margin-top:8px;">
+        <button type="button" class="btn secondary small" id="addRowBtn">+ Tambah Baris</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Komitmen Peserta</h2>
+      <textarea id="komitmen" rows="4" required></textarea>
+    </div>
+
+    <div class="card">
+      <h2>Tanda Tangan Peserta</h2>
+      <div class="tabs">
+        <div class="tab-btn active" data-tab="draw">Gambar Langsung</div>
+        <div class="tab-btn" data-tab="upload">Upload Foto</div>
+      </div>
+
+      <div class="sig-panel active" id="panel-draw">
+        <canvas id="sigCanvas" width="500" height="180"></canvas>
+        <button type="button" class="btn secondary small" id="clearSigBtn" style="margin-top:8px;">Hapus Coretan</button>
+      </div>
+
+      <div class="sig-panel" id="panel-upload">
+        <input type="file" id="sigUpload" accept="image/*">
+        <img id="uploadPreview">
+      </div>
+
+      <label style="margin-top:14px;" class="required">Nama Jelas (di bawah tanda tangan)</label>
+      <input type="text" id="namaJelas">
+    </div>
+
+    <div class="submit-area">
+      <button type="submit" class="btn" id="submitBtn">Kirim &amp; Unduh PDF</button>
+      <div class="status" id="statusBox"></div>
+    </div>
+
+  </form>
+</div>
+
+<script>
+// =====================================================================
+// KONFIGURASI - ganti SCRIPT_URL dengan URL Web App Apps Script kamu
+// =====================================================================
+const CONFIG = {
+  SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzy4IIoooYUTTHzI67lch6fAR68ffObe5ZciPA5vZ6zkD0P80iR_E9xAeBLjFzNyKlY/exec"
+};
+
+const TUJUAN_TEXT = {
+  spmi: "Menjadikan siklus Penjaminan Mutu Internal sebagai budaya kerja sekolah yang berorientasi pada peningkatan hasil belajar murid, bukan sekadar pemenuhan dokumen akreditasi.",
+  litnum: "Menyusun rencana tindak lanjut sebagai komitmen pelaksanaan Bimtek Penguatan Literasi dan Numerasi di satuan pendidikan.",
+  lit_paud: "Menyusun rencana tindak lanjut sebagai komitmen pelaksanaan Bimtek Literasi Dasar Pendidik PAUD.",
+  digitalisasi: "Menyusun rencana tindak lanjut sebagai komitmen pelaksanaan Bimtek Digitalisasi Pembelajaran untuk penguatan Literasi dan Numerasi."
+};
+
+const JENIS_LABEL = {
+  spmi: "SPMI",
+  litnum: "Literasi dan Numerasi",
+  lit_paud: "Literasi Dasar Pendidik PAUD",
+  digitalisasi: "Digitalisasi Pembelajaran"
+};
+
+// ---------------------------------------------------------------------
+// Jenis Bimtek -> update tujuan & label header
+// ---------------------------------------------------------------------
+const jenisSel = document.getElementById('jenisBimtek');
+const tujuanBox = document.getElementById('tujuan');
+const jenisLabelEl = document.getElementById('jenisLabel');
+
+function applyJenis(){
+  const k = jenisSel.value;
+  tujuanBox.value = TUJUAN_TEXT[k];
+  jenisLabelEl.textContent = JENIS_LABEL[k] + " - Rakornas Direktorat SMA, Kemendikdasmen";
+}
+jenisSel.addEventListener('change', applyJenis);
+applyJenis();
+
+// ---------------------------------------------------------------------
+// Autocomplete Nama Peserta
+// ---------------------------------------------------------------------
+let pesertaList = [];
+
+async function loadPesertaList(){
+  try{
+    const res = await fetch(CONFIG.SCRIPT_URL + '?action=getPeserta');
+    const result = await res.json();
+    if(result.status === 'success') pesertaList = result.peserta;
+  }catch(err){
+    console.warn('Gagal memuat daftar peserta, autocomplete nonaktif.', err);
+  }
+}
+loadPesertaList();
+
+const namaInput = document.getElementById('nama');
+const instansiInput = document.getElementById('instansi');
+const suggestBox = document.getElementById('namaSuggestions');
+
+namaInput.addEventListener('input', function(){
+  const q = namaInput.value.trim().toLowerCase();
+  suggestBox.innerHTML = '';
+  if(q.length < 2 || pesertaList.length === 0){
+    suggestBox.classList.remove('active');
+    return;
+  }
+  const matches = pesertaList.filter(p => p.nama.toLowerCase().includes(q)).slice(0, 8);
+  if(matches.length === 0){
+    suggestBox.classList.remove('active');
+    return;
+  }
+  matches.forEach(p => {
+    const item = document.createElement('div');
+    item.className = 'suggestion-item';
+    item.innerHTML = p.nama + '<div class="sug-instansi">' + p.instansi + '</div>';
+    item.addEventListener('click', () => {
+      namaInput.value = p.nama;
+      instansiInput.value = p.instansi;
+      if(p.provinsi) document.getElementById('provinsi').value = p.provinsi;
+      if(p.jenisBimtek && JENIS_LABEL[p.jenisBimtek]){
+        jenisSel.value = p.jenisBimtek;
+        applyJenis();
+      }
+      suggestBox.innerHTML = '';
+      suggestBox.classList.remove('active');
+    });
+    suggestBox.appendChild(item);
+  });
+  suggestBox.classList.add('active');
+});
+
+document.addEventListener('click', function(e){
+  if(e.target !== namaInput) suggestBox.classList.remove('active');
+});
+
+// ---------------------------------------------------------------------
+// Tabel kegiatan dinamis
+// ---------------------------------------------------------------------
+const kegiatanBody = document.getElementById('kegiatanBody');
+let rowCount = 0;
+
+function addRow(){
+  rowCount++;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td class="no-col">${rowCount}</td>
+    <td><textarea rows="2"></textarea></td>
+    <td><textarea rows="2"></textarea></td>
+    <td>
+      <label style="font-size:10px; font-weight:400; margin:0;">Mulai</label>
+      <input type="date" class="tgl-mulai">
+      <label style="font-size:10px; font-weight:400; margin:4px 0 0;">Selesai</label>
+      <input type="date" class="tgl-selesai">
+    </td>
+    <td><textarea rows="2"></textarea></td>
+    <td><textarea rows="2"></textarea></td>
+    <td><textarea rows="2"></textarea></td>
+    <td class="act-col"><button type="button" class="btn danger small" onclick="removeRow(this)">x</button></td>
+  `;
+  kegiatanBody.appendChild(tr);
+  renumberRows();
+}
+
+function removeRow(btn){
+  if(kegiatanBody.rows.length <= 1) return;
+  btn.closest('tr').remove();
+  renumberRows();
+}
+
+function renumberRows(){
+  [...kegiatanBody.rows].forEach((row, i) => {
+    row.querySelector('.no-col').textContent = i + 1;
+  });
+  rowCount = kegiatanBody.rows.length;
+}
+
+document.getElementById('addRowBtn').addEventListener('click', addRow);
+for(let i=0; i<3; i++) addRow();
+
+function formatTanggal(iso){
+  if(!iso) return '';
+  const [y,m,d] = iso.split('-');
+  const BULAN = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  return d + ' ' + BULAN[parseInt(m,10)-1] + ' ' + y;
+}
+
+function getKegiatanData(){
+  return [...kegiatanBody.rows].map(row => {
+    const cells = row.querySelectorAll('td');
+    const tglMulai = cells[3].querySelector('.tgl-mulai').value;
+    const tglSelesai = cells[3].querySelector('.tgl-selesai').value;
+    return {
+      no: cells[0].textContent.trim(),
+      kegiatan: cells[1].querySelector('textarea').value.trim(),
+      tujuan: cells[2].querySelector('textarea').value.trim(),
+      tanggalMulai: formatTanggal(tglMulai),
+      tanggalSelesai: formatTanggal(tglSelesai),
+      sasaran: cells[4].querySelector('textarea').value.trim(),
+      indikator: cells[5].querySelector('textarea').value.trim(),
+      bukti: cells[6].querySelector('textarea').value.trim()
+    };
+  }).filter(r => r.kegiatan !== '');
+}
+
+// ---------------------------------------------------------------------
+// Tab tanda tangan
+// ---------------------------------------------------------------------
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.sig-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ---------------------------------------------------------------------
+// Signature pad (canvas)
+// ---------------------------------------------------------------------
+const canvas = document.getElementById('sigCanvas');
+const ctx = canvas.getContext('2d');
+ctx.lineWidth = 2;
+ctx.lineCap = 'round';
+ctx.strokeStyle = '#1A3E6F';
+let drawing = false;
+let hasDrawn = false;
+
+function getPos(e){
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  return {
+    x: (e.clientX - rect.left) * scaleX,
+    y: (e.clientY - rect.top) * scaleY
+  };
+}
+
+canvas.addEventListener('pointerdown', e => {
+  drawing = true; hasDrawn = true;
+  const p = getPos(e);
+  ctx.beginPath();
+  ctx.moveTo(p.x, p.y);
+});
+canvas.addEventListener('pointermove', e => {
+  if(!drawing) return;
+  const p = getPos(e);
+  ctx.lineTo(p.x, p.y);
+  ctx.stroke();
+});
+window.addEventListener('pointerup', () => drawing = false);
+
+document.getElementById('clearSigBtn').addEventListener('click', () => {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  hasDrawn = false;
+});
+
+// ---------------------------------------------------------------------
+// Upload foto tanda tangan (resize otomatis biar file kecil)
+// ---------------------------------------------------------------------
+let uploadedSigDataUrl = null;
+document.getElementById('sigUpload').addEventListener('change', function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt){
+    const img = new Image();
+    img.onload = function(){
+      const maxW = 500;
+      const scale = Math.min(1, maxW / img.width);
+      const c = document.createElement('canvas');
+      c.width = img.width * scale;
+      c.height = img.height * scale;
+      const cctx = c.getContext('2d');
+      cctx.fillStyle = '#fff';
+      cctx.fillRect(0,0,c.width,c.height);
+      cctx.drawImage(img, 0, 0, c.width, c.height);
+      uploadedSigDataUrl = c.toDataURL('image/jpeg', 0.7);
+      const prev = document.getElementById('uploadPreview');
+      prev.src = uploadedSigDataUrl;
+      prev.style.display = 'block';
+    };
+    img.src = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+function getSignatureDataUrl(){
+  const activeTab = document.querySelector('.tab-btn.active').dataset.tab;
+  if(activeTab === 'draw'){
+    return hasDrawn ? canvas.toDataURL('image/png') : null;
+  }
+  return uploadedSigDataUrl;
+}
+
+// ---------------------------------------------------------------------
+// Validasi
+// ---------------------------------------------------------------------
+function validate(){
+  const required = ['nama','instansi','provinsi','komitmen','namaJelas'];
+  for(const id of required){
+    if(!document.getElementById(id).value.trim()){
+      alert('Mohon lengkapi semua kolom wajib (bertanda *).');
+      document.getElementById(id).focus();
+      return false;
+    }
+  }
+  if(getKegiatanData().length === 0){
+    alert('Isi minimal 1 baris Program/Kegiatan.');
+    return false;
+  }
+  if(!getSignatureDataUrl()){
+    alert('Tanda tangan wajib diisi — gambar langsung atau upload foto.');
+    return false;
+  }
+  return true;
+}
+
+// ---------------------------------------------------------------------
+// Generate PDF
+// ---------------------------------------------------------------------
+function generatePDF(data){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'l', unit: 'mm', format: 'a4' });
+  const pageW = doc.internal.pageSize.getWidth();
+
+  // Header navy bar
+  doc.setFillColor(26, 62, 111);
+  doc.rect(0, 0, pageW, 20, 'F');
+  doc.setTextColor(255,255,255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(14);
+  doc.text('LEMBAR KERJA RENCANA TINDAK LANJUT (RTL)', pageW/2, 9, { align: 'center' });
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text(JENIS_LABEL[data.jenisBimtek] + ' - Rakornas Direktorat SMA, Kemendikdasmen', pageW/2, 15, { align: 'center' });
+
+  // gold accent
+  doc.setFillColor(232, 160, 32);
+  doc.rect(pageW/2 - (pageW*0.4)/2, 20, pageW*0.4, 1.5, 'F');
+
+  doc.setTextColor(50,50,50);
+  let y = 30;
+
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+  doc.text('Nama', 12, y); doc.text(':', 40, y);
+  doc.setFont('helvetica', 'normal'); doc.text(data.nama, 43, y);
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('Instansi', 150, y); doc.text(':', 178, y);
+  doc.setFont('helvetica', 'normal'); doc.text(data.instansi, 181, y);
+
+  y += 6;
+  doc.setFont('helvetica', 'bold');
+  doc.text('Provinsi', 12, y); doc.text(':', 40, y);
+  doc.setFont('helvetica', 'normal'); doc.text(data.provinsi, 43, y);
+
+  y += 9;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5);
+  doc.text('Tujuan', 12, y);
+  y += 5;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
+  const tujuanLines = doc.splitTextToSize(data.tujuan, pageW - 24);
+  doc.text(tujuanLines, 12, y);
+  y += tujuanLines.length * 4.5 + 6;
+
+  // Tabel kegiatan
+  doc.autoTable({
+    startY: y,
+    margin: { left: 12, right: 12 },
+    head: [['No','Program/Kegiatan','Tujuan','Waktu\nPelaksanaan','Sasaran','Indikator\nKeberhasilan','Bukti/Dokumen']],
+    body: data.kegiatan.map(r => [r.no, r.kegiatan, r.tujuan, (r.tanggalMulai || '-') + ' s.d.\n' + (r.tanggalSelesai || '-'), r.sasaran, r.indikator, r.bukti]),
+    styles: { fontSize: 8, cellPadding: 2, valign: 'top' },
+    headStyles: { fillColor: [26,62,111], textColor: 255, fontStyle: 'bold' },
+    columnStyles: {
+      0: { cellWidth: 8, halign: 'center' },
+      1: { cellWidth: 42 },
+      2: { cellWidth: 48 },
+      3: { cellWidth: 22 },
+      4: { cellWidth: 28 },
+      5: { cellWidth: 42 },
+      6: { cellWidth: 'auto' }
+    }
+  });
+
+  y = doc.lastAutoTable.finalY + 8;
+
+  if(y > 165){ doc.addPage(); y = 20; }
+
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5);
+  doc.text('Komitmen Peserta', 12, y);
+  y += 5;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
+  const komitmenLines = doc.splitTextToSize(data.komitmen, pageW - 24);
+  doc.text(komitmenLines, 12, y);
+  y += komitmenLines.length * 4.5 + 10;
+
+  if(y > 165){ doc.addPage(); y = 20; }
+
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5);
+  doc.text('Tanda Tangan Peserta', 12, y);
+  y += 4;
+
+  if(data.signature){
+    try{
+      doc.addImage(data.signature, 'PNG', 12, y, 55, 25);
+    }catch(e){
+      try{ doc.addImage(data.signature, 'JPEG', 12, y, 55, 25); }catch(e2){}
+    }
+  }
+  y += 27;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
+  doc.text('(' + data.namaJelas + ')', 12, y);
+
+  // Footer
+  const pageCount = doc.internal.getNumberOfPages();
+  for(let i=1; i<=pageCount; i++){
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(120,120,120);
+    doc.text('Direktorat SMA | Kemendikdasmen', 12, 205);
+    doc.text('Halaman ' + i + ' / ' + pageCount, pageW - 12, 205, { align: 'right' });
+  }
+
+  return doc;
+}
+
+// ---------------------------------------------------------------------
+// Kirim ke Google Sheet (Apps Script)
+// ---------------------------------------------------------------------
+async function sendToSheet(data, attempt){
+  attempt = attempt || 1;
+  if(CONFIG.SCRIPT_URL.indexOf('GANTI_DENGAN') !== -1){
+    console.warn('SCRIPT_URL belum diisi — data tidak dikirim ke rekap.');
+    return { status: 'skipped' };
+  }
+  try{
+    const res = await fetch(CONFIG.SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(data)
+    });
+    return await res.json();
+  }catch(err){
+    if(attempt < 3){
+      await new Promise(r => setTimeout(r, 1500 * attempt));
+      return sendToSheet(data, attempt + 1);
+    }
+    throw err;
+  }
+}
+
+// ---------------------------------------------------------------------
+// Submit handler
+// ---------------------------------------------------------------------
+document.getElementById('rtlForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  if(!validate()) return;
+
+  const submitBtn = document.getElementById('submitBtn');
+  const statusBox = document.getElementById('statusBox');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Memproses...';
+  statusBox.style.display = 'none';
+
+  const payload = {
+    timestamp: new Date().toISOString(),
+    jenisBimtek: jenisSel.value,
+    nama: document.getElementById('nama').value.trim(),
+    instansi: document.getElementById('instansi').value.trim(),
+    provinsi: document.getElementById('provinsi').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    tujuan: tujuanBox.value.trim(),
+    komitmen: document.getElementById('komitmen').value.trim(),
+    kegiatan: getKegiatanData(),
+    namaJelas: document.getElementById('namaJelas').value.trim(),
+    signature: getSignatureDataUrl()
+  };
+
+  try{
+    const doc = generatePDF(payload);
+    doc.save('RTL_' + payload.jenisBimtek + '_' + payload.nama.replace(/\s+/g,'_') + '.pdf');
+
+    payload.pdfFile = doc.output('datauristring');
+    const result = await sendToSheet(payload);
+
+    statusBox.className = 'status ok';
+    statusBox.textContent = 'PDF berhasil diunduh. Data tersimpan ke rekap panitia.';
+    if(result.status === 'skipped'){
+      statusBox.textContent = 'PDF berhasil diunduh. (Rekap belum aktif — SCRIPT_URL belum dikonfigurasi)';
+    }
+  }catch(err){
+    console.error(err);
+    statusBox.className = 'status err';
+    statusBox.textContent = 'PDF berhasil dibuat, tapi pengiriman ke rekap gagal. Simpan PDF ini dan hubungi panitia. (' + err.message + ')';
+  }finally{
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Kirim & Unduh PDF';
+  }
+});
+</script>
+</body>
+</html>
