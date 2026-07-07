@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Absensi - Direktorat SMA</title>
+<style>
+  :root{ --navy:#1A3E6F; --gold:#E8A020; --gray:#4A4A4A; --border:#DDE1E6; }
+  *{box-sizing:border-box;}
+  body{ margin:0; padding:0; font-family:"Segoe UI", Arial, sans-serif; background:#F5F6F8; color:var(--gray); }
+  .header{ background:var(--navy); color:#fff; padding:20px 16px 14px; text-align:center; }
+  .header h1{margin:0; font-size:18px; font-weight:700;}
+  .header p{margin:4px 0 0; font-size:13px; opacity:.9;}
+  .header .accent{height:4px; width:40%; background:var(--gold); margin:10px auto 0;}
+  .wrap{max-width:520px; margin:0 auto; padding:16px;}
+  a.back{color:var(--navy); font-size:13px; text-decoration:none; display:inline-block; margin-bottom:10px;}
+  .card{ background:#fff; border:1px solid var(--border); border-radius:8px; padding:18px; margin-bottom:14px; }
+  label{display:block; font-size:13px; margin:6px 0 4px; font-weight:600;}
+  input[type=text], select{ width:100%; padding:10px 12px; font-size:15px; border:1px solid var(--border); border-radius:4px; font-family:inherit; }
+  .required:after{content:" *"; color:#c0392b;}
+  .autocomplete-wrap{position:relative;}
+  .suggestions{
+    position:absolute; top:100%; left:0; right:0; background:#fff;
+    border:1px solid var(--border); border-top:none; border-radius:0 0 4px 4px;
+    max-height:200px; overflow-y:auto; z-index:20; display:none;
+  }
+  .suggestions.active{display:block;}
+  .suggestion-item{ padding:8px 10px; font-size:13px; cursor:pointer; border-bottom:1px solid #f0f0f0; }
+  .suggestion-item:last-child{border-bottom:none;}
+  .suggestion-item:hover{background:#F5F6F8;}
+  .suggestion-item .sug-instansi{font-size:11px; color:#888;}
+  .hari-group{ margin-bottom:16px; }
+  .hari-title{ font-size:12px; font-weight:700; color:var(--navy); text-transform:uppercase; margin-bottom:6px; }
+  .sesi-row{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:#fff; border:1px solid var(--border); border-radius:6px;
+    padding:10px 12px; margin-bottom:6px;
+  }
+  .sesi-row .info .label{font-size:13.5px; font-weight:600; color:var(--gray); margin:0;}
+  .sesi-row .info .jam{font-size:11px; color:#888; margin-top:1px;}
+  .badge{ font-size:11px; padding:4px 10px; border-radius:12px; font-weight:600; white-space:nowrap; border:none; cursor:pointer; }
+  .badge.aktif{ background:var(--navy); color:#fff; cursor:pointer; }
+  .badge.aktif:hover{ opacity:.85; }
+  .badge.belum{ background:#eee; color:#999; cursor:default; }
+  .badge.lewat{ background:#f5f5f5; color:#bbb; cursor:default; }
+  .badge.hadir{ background:#e6f4ea; color:#1e7e34; cursor:default; }
+  .status{ text-align:center; padding:12px; border-radius:4px; margin-top:12px; font-size:13px; display:none; }
+  .status.err{background:#fdecea; color:#c0392b; display:block;}
+  .status.ok{background:#e6f4ea; color:#1e7e34; display:block;}
+  .empty-hint{ text-align:center; color:#888; font-size:13px; padding:20px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>ABSENSI PESERTA</h1>
+  <p>Rakornas - Direktorat SMA, Kemendikdasmen</p>
+  <div class="accent"></div>
+</div>
+
+<div class="wrap">
+  <a class="back" href="index.html">&larr; Kembali ke menu</a>
+
+  <div class="card">
+    <label class="required">Nama</label>
+    <div class="autocomplete-wrap">
+      <input type="text" id="nama" required autocomplete="off">
+      <div class="suggestions" id="namaSuggestions"></div>
+    </div>
+    <label>Instansi</label>
+    <input type="text" id="instansi">
+    <label class="required">Ruang / Kelas Bimtek</label>
+    <select id="ruangSel">
+      <option value="litnum">Literasi dan Numerasi</option>
+      <option value="lit_paud">Literasi Dasar Pendidik PAUD</option>
+      <option value="digitalisasi">Digitalisasi Pembelajaran</option>
+      <option value="spmi">SPMI</option>
+    </select>
+    <p style="font-size:11px; color:#888; margin:4px 0 0;">Terisi otomatis dari nama yang dipilih. Ganti manual kalau keliru.</p>
+  </div>
+
+  <div id="sesiContainer"></div>
+
+  <div class="status" id="statusBox"></div>
+</div>
+
+<script>
+const CONFIG = {
+  SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzy4IIoooYUTTHzI67lch6fAR68ffObe5ZciPA5vZ6zkD0P80iR_E9xAeBLjFzNyKlY/exec"
+};
+
+// ---------------------------------------------------------------------
+// Daftar sesi sesuai rundown Panduan Bimtek Fasnas (8-11 Juli 2026)
+// room: null = pleno (semua peserta), atau kode jenis bimtek
+// ---------------------------------------------------------------------
+const SESSIONS = [
+  { id:'h1_1', label:'Pembukaan & Materi', hari:'Rabu, 8 Juli 2026', room:null, start:'2026-07-08T13:30:00', end:'2026-07-08T17:30:00', durasi:240 },
+  { id:'h1_2', label:'Pre Test', hari:'Rabu, 8 Juli 2026', room:null, start:'2026-07-08T19:30:00', end:'2026-07-08T20:30:00', durasi:60 },
+
+  { id:'h2_litnum_pagi', label:'Sesi Pagi', hari:'Kamis, 9 Juli 2026', room:'litnum', start:'2026-07-09T08:00:00', end:'2026-07-09T12:00:00', durasi:240 },
+  { id:'h2_litnum_siang', label:'Sesi Siang', hari:'Kamis, 9 Juli 2026', room:'litnum', start:'2026-07-09T13:30:00', end:'2026-07-09T17:45:00', durasi:255 },
+  { id:'h2_litnum_malam', label:'Sesi Malam', hari:'Kamis, 9 Juli 2026', room:'litnum', start:'2026-07-09T19:30:00', end:'2026-07-09T21:30:00', durasi:120 },
+
+  { id:'h2_lit_paud_pagi', label:'Sesi Pagi', hari:'Kamis, 9 Juli 2026', room:'lit_paud', start:'2026-07-09T08:00:00', end:'2026-07-09T12:00:00', durasi:240 },
+  { id:'h2_lit_paud_siang', label:'Sesi Siang', hari:'Kamis, 9 Juli 2026', room:'lit_paud', start:'2026-07-09T13:30:00', end:'2026-07-09T17:45:00', durasi:255 },
+  { id:'h2_lit_paud_malam', label:'Sesi Malam', hari:'Kamis, 9 Juli 2026', room:'lit_paud', start:'2026-07-09T19:00:00', end:'2026-07-09T22:00:00', durasi:180 },
+
+  { id:'h2_digitalisasi_pagi', label:'Sesi Pagi', hari:'Kamis, 9 Juli 2026', room:'digitalisasi', start:'2026-07-09T08:00:00', end:'2026-07-09T12:00:00', durasi:240 },
+  { id:'h2_digitalisasi_siang', label:'Sesi Siang', hari:'Kamis, 9 Juli 2026', room:'digitalisasi', start:'2026-07-09T13:30:00', end:'2026-07-09T17:45:00', durasi:255 },
+  { id:'h2_digitalisasi_malam', label:'Sesi Malam', hari:'Kamis, 9 Juli 2026', room:'digitalisasi', start:'2026-07-09T19:00:00', end:'2026-07-09T22:00:00', durasi:180 },
+
+  { id:'h2_spmi_pagi', label:'Sesi Pagi', hari:'Kamis, 9 Juli 2026', room:'spmi', start:'2026-07-09T08:00:00', end:'2026-07-09T12:00:00', durasi:240 },
+  { id:'h2_spmi_siang', label:'Sesi Siang', hari:'Kamis, 9 Juli 2026', room:'spmi', start:'2026-07-09T13:30:00', end:'2026-07-09T17:45:00', durasi:255 },
+  { id:'h2_spmi_malam', label:'Sesi Malam', hari:'Kamis, 9 Juli 2026', room:'spmi', start:'2026-07-09T19:00:00', end:'2026-07-09T22:00:00', durasi:180 },
+
+  { id:'h3_litnum_pagi', label:'Sesi Pagi', hari:'Jumat, 10 Juli 2026', room:'litnum', start:'2026-07-10T08:00:00', end:'2026-07-10T12:00:00', durasi:240 },
+  { id:'h3_litnum_siang', label:'Sesi Siang', hari:'Jumat, 10 Juli 2026', room:'litnum', start:'2026-07-10T13:30:00', end:'2026-07-10T17:45:00', durasi:255 },
+  { id:'h3_litnum_malam', label:'Sesi Malam', hari:'Jumat, 10 Juli 2026', room:'litnum', start:'2026-07-10T19:30:00', end:'2026-07-10T21:30:00', durasi:120 },
+
+  { id:'h3_lit_paud_pagi', label:'Sesi Pagi', hari:'Jumat, 10 Juli 2026', room:'lit_paud', start:'2026-07-10T08:00:00', end:'2026-07-10T12:00:00', durasi:240 },
+  { id:'h3_lit_paud_siang', label:'Sesi Siang', hari:'Jumat, 10 Juli 2026', room:'lit_paud', start:'2026-07-10T13:30:00', end:'2026-07-10T17:45:00', durasi:255 },
+  { id:'h3_lit_paud_malam', label:'Sesi Malam', hari:'Jumat, 10 Juli 2026', room:'lit_paud', start:'2026-07-10T19:30:00', end:'2026-07-10T21:30:00', durasi:120 },
+
+  { id:'h3_digitalisasi_pagi', label:'Sesi Pagi', hari:'Jumat, 10 Juli 2026', room:'digitalisasi', start:'2026-07-10T08:00:00', end:'2026-07-10T12:00:00', durasi:240 },
+  { id:'h3_digitalisasi_siang', label:'Sesi Siang', hari:'Jumat, 10 Juli 2026', room:'digitalisasi', start:'2026-07-10T13:30:00', end:'2026-07-10T17:45:00', durasi:255 },
+  { id:'h3_digitalisasi_malam', label:'Sesi Malam', hari:'Jumat, 10 Juli 2026', room:'digitalisasi', start:'2026-07-10T19:00:00', end:'2026-07-10T20:00:00', durasi:60 },
+
+  { id:'h3_spmi_pagi', label:'Sesi Pagi', hari:'Jumat, 10 Juli 2026', room:'spmi', start:'2026-07-10T08:00:00', end:'2026-07-10T12:00:00', durasi:240 },
+  { id:'h3_spmi_siang', label:'Sesi Siang', hari:'Jumat, 10 Juli 2026', room:'spmi', start:'2026-07-10T13:30:00', end:'2026-07-10T17:45:00', durasi:255 },
+  { id:'h3_spmi_malam', label:'Sesi Malam', hari:'Jumat, 10 Juli 2026', room:'spmi', start:'2026-07-10T19:00:00', end:'2026-07-10T22:00:00', durasi:180 },
+
+  { id:'h4_1', label:'Refleksi & RTL', hari:'Sabtu, 11 Juli 2026', room:null, start:'2026-07-11T08:00:00', end:'2026-07-11T09:30:00', durasi:90 },
+  { id:'h4_2', label:'Post Test', hari:'Sabtu, 11 Juli 2026', room:null, start:'2026-07-11T09:30:00', end:'2026-07-11T10:30:00', durasi:60 },
+  { id:'h4_3', label:'Penutupan & Administrasi', hari:'Sabtu, 11 Juli 2026', room:null, start:'2026-07-11T10:30:00', end:'2026-07-11T12:00:00', durasi:90 }
+];
+
+const checkedInIds = new Set();
+
+// ---------------------------------------------------------------------
+// Autocomplete Nama Peserta
+// ---------------------------------------------------------------------
+let pesertaList = [];
+async function loadPesertaList(){
+  try{
+    const res = await fetch(CONFIG.SCRIPT_URL + '?action=getPeserta');
+    const result = await res.json();
+    if(result.status === 'success') pesertaList = result.peserta;
+  }catch(err){
+    console.warn('Gagal memuat daftar peserta, autocomplete nonaktif.', err);
+  }
+}
+loadPesertaList();
+
+const namaInput = document.getElementById('nama');
+const instansiInput = document.getElementById('instansi');
+const ruangSel = document.getElementById('ruangSel');
+const suggestBox = document.getElementById('namaSuggestions');
+
+namaInput.addEventListener('input', function(){
+  const q = namaInput.value.trim().toLowerCase();
+  suggestBox.innerHTML = '';
+  if(q.length < 2 || pesertaList.length === 0){
+    suggestBox.classList.remove('active');
+    return;
+  }
+  const matches = pesertaList.filter(p => p.nama.toLowerCase().includes(q)).slice(0, 8);
+  if(matches.length === 0){
+    suggestBox.classList.remove('active');
+    return;
+  }
+  matches.forEach(p => {
+    const item = document.createElement('div');
+    item.className = 'suggestion-item';
+    item.innerHTML = p.nama + '<div class="sug-instansi">' + p.instansi + '</div>';
+    item.addEventListener('click', () => {
+      namaInput.value = p.nama;
+      instansiInput.value = p.instansi;
+      if(p.jenisBimtek) ruangSel.value = p.jenisBimtek;
+      suggestBox.innerHTML = '';
+      suggestBox.classList.remove('active');
+      renderSesi();
+    });
+    suggestBox.appendChild(item);
+  });
+  suggestBox.classList.add('active');
+});
+
+document.addEventListener('click', function(e){
+  if(e.target !== namaInput) suggestBox.classList.remove('active');
+});
+
+ruangSel.addEventListener('change', renderSesi);
+
+// ---------------------------------------------------------------------
+// Render daftar sesi, dikelompokkan per hari
+// ---------------------------------------------------------------------
+function getSesiStatus(sesi){
+  const now = new Date();
+  const start = new Date(sesi.start);
+  const end = new Date(sesi.end);
+  if(checkedInIds.has(sesi.id)) return 'hadir';
+  if(now < start) return 'belum';
+  if(now > end) return 'lewat';
+  return 'aktif';
+}
+
+function formatJam(iso){
+  const d = new Date(iso);
+  return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+}
+
+function renderSesi(){
+  const ruang = ruangSel.value;
+  const relevant = SESSIONS.filter(s => s.room === null || s.room === ruang);
+  const container = document.getElementById('sesiContainer');
+  container.innerHTML = '';
+
+  const hariList = [...new Set(relevant.map(s => s.hari))];
+  hariList.forEach(hari => {
+    const group = document.createElement('div');
+    group.className = 'hari-group';
+    const title = document.createElement('div');
+    title.className = 'hari-title';
+    title.textContent = hari;
+    group.appendChild(title);
+
+    relevant.filter(s => s.hari === hari).forEach(sesi => {
+      const status = getSesiStatus(sesi);
+      const row = document.createElement('div');
+      row.className = 'sesi-row';
+      const labelText = { belum:'Belum mulai', aktif:'Check-in', lewat:'Sudah lewat', hadir:'Hadir' }[status];
+      row.innerHTML = `
+        <div class="info">
+          <div class="label">${sesi.label}</div>
+          <div class="jam">${formatJam(sesi.start)}-${formatJam(sesi.end)} (${sesi.durasi} menit)</div>
+        </div>
+        <button class="badge ${status}" ${status !== 'aktif' ? 'disabled' : ''} data-id="${sesi.id}">${labelText}</button>
+      `;
+      group.appendChild(row);
+    });
+    container.appendChild(group);
+  });
+
+  container.querySelectorAll('.badge.aktif').forEach(btn => {
+    btn.addEventListener('click', () => checkIn(btn.dataset.id));
+  });
+}
+renderSesi();
+setInterval(renderSesi, 30000); // refresh status tiap 30 detik biar sesi yang lewat otomatis ter-update
+
+// ---------------------------------------------------------------------
+// Submit check-in
+// ---------------------------------------------------------------------
+async function submitAbsensi(payload, attempt){
+  attempt = attempt || 1;
+  try{
+    const res = await fetch(CONFIG.SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+    return await res.json();
+  }catch(err){
+    if(attempt < 3){
+      await new Promise(r => setTimeout(r, 1500 * attempt));
+      return submitAbsensi(payload, attempt + 1);
+    }
+    throw err;
+  }
+}
+
+async function checkIn(sesiId){
+  const nama = namaInput.value.trim();
+  const statusBox = document.getElementById('statusBox');
+  statusBox.style.display = 'none';
+
+  if(!nama){
+    statusBox.className = 'status err';
+    statusBox.style.display = 'block';
+    statusBox.textContent = 'Isi nama dulu sebelum check-in.';
+    return;
+  }
+
+  const sesi = SESSIONS.find(s => s.id === sesiId);
+  const payload = {
+    formType: 'absensi',
+    nama: nama,
+    instansi: instansiInput.value.trim(),
+    sesiId: sesi.id,
+    sesiLabel: sesi.hari + ' - ' + sesi.label,
+    durasi: sesi.durasi
+  };
+
+  try{
+    const result = await submitAbsensi(payload);
+    if(result.status !== 'success') throw new Error(result.message || 'Gagal mencatat kehadiran.');
+    checkedInIds.add(sesiId);
+    renderSesi();
+    statusBox.className = 'status ok';
+    statusBox.style.display = 'block';
+    statusBox.textContent = 'Kehadiran untuk "' + sesi.label + '" tercatat.';
+  }catch(err){
+    statusBox.className = 'status err';
+    statusBox.style.display = 'block';
+    statusBox.textContent = 'Gagal mencatat kehadiran. Coba lagi. (' + err.message + ')';
+  }
+}
+</script>
+</body>
+</html>
