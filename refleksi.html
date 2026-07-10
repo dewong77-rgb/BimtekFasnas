@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lembar Refleksi - Direktorat SMA</title>
+<style>
+  :root{ --navy:#1A3E6F; --gold:#E8A020; --gray:#4A4A4A; --border:#DDE1E6; }
+  *{box-sizing:border-box;}
+  body{ margin:0; padding:0; font-family:"Segoe UI", Arial, sans-serif; background:#F5F6F8; color:var(--gray); }
+  .header{ background:var(--navy); color:#fff; padding:20px 16px 14px; text-align:center; }
+  .header h1{margin:0; font-size:18px; font-weight:700;}
+  .header p{margin:4px 0 0; font-size:13px; opacity:.9;}
+  .header .accent{height:4px; width:40%; background:var(--gold); margin:10px auto 0;}
+  .wrap{max-width:640px; margin:0 auto; padding:16px;}
+  a.back{color:var(--navy); font-size:13px; text-decoration:none; display:inline-block; margin-bottom:10px;}
+  .card{ background:#fff; border:1px solid var(--border); border-radius:8px; padding:18px; margin-bottom:14px; }
+  .card h2{ font-size:14px; color:var(--navy); margin:0 0 10px; border-bottom:2px solid var(--gold); padding-bottom:6px; display:inline-block; }
+  label{display:block; font-size:13px; margin:10px 0 4px; font-weight:600;}
+  label:first-of-type{margin-top:0;}
+  input[type=text], select, textarea{
+    width:100%; padding:9px 11px; font-size:14px; border:1px solid var(--border); border-radius:4px; font-family:inherit;
+  }
+  textarea{resize:vertical;}
+  .required:after{content:" *"; color:#c0392b;}
+  .autocomplete-wrap{position:relative;}
+  .suggestions{
+    position:absolute; top:100%; left:0; right:0; background:#fff;
+    border:1px solid var(--border); border-top:none; border-radius:0 0 4px 4px;
+    max-height:200px; overflow-y:auto; z-index:20; display:none;
+  }
+  .suggestions.active{display:block;}
+  .suggestion-item{ padding:8px 10px; font-size:13px; cursor:pointer; border-bottom:1px solid #f0f0f0; }
+  .suggestion-item:last-child{border-bottom:none;}
+  .suggestion-item:hover{background:#F5F6F8;}
+  .suggestion-item .sug-instansi{font-size:11px; color:#888;}
+  .btn{
+    background:var(--navy); color:#fff; border:none; padding:12px 40px;
+    border-radius:4px; font-size:15px; cursor:pointer; font-weight:600;
+  }
+  .btn:disabled{opacity:.5; cursor:not-allowed;}
+  .submit-area{text-align:center; padding:10px 0 30px;}
+  .status{ text-align:center; padding:12px; border-radius:4px; margin-top:12px; font-size:13px; display:none; }
+  .status.err{background:#fdecea; color:#c0392b; display:block;}
+  .success-screen{
+    display:none; text-align:center; background:#fff; border:1px solid var(--border);
+    border-radius:8px; padding:40px 24px; margin-top:20px;
+  }
+  .success-screen .success-icon{
+    width:64px; height:64px; border-radius:50%; background:#1e7e34; color:#fff;
+    font-size:32px; line-height:64px; margin:0 auto 16px;
+  }
+  .success-screen h2{color:var(--navy); font-size:18px; margin:0 0 8px; border:none; padding:0;}
+  .success-screen p{font-size:13px; color:#666; margin:0 0 20px;}
+  .success-screen .btn{text-decoration:none; display:inline-block;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>LEMBAR REFLEKSI RENCANA AKSI FASILITATOR</h1>
+  <p id="jenisLabel">Diisi setelah mengkaji seluruh bahan dan PPT - Rakornas Direktorat SMA</p>
+  <div class="accent"></div>
+</div>
+
+<div class="wrap">
+  <a class="back" href="index.html">&larr; Kembali ke menu</a>
+
+  <form id="refleksiForm">
+
+    <div class="card">
+      <h2>Jenis Bimtek</h2>
+      <select id="jenisBimtek" required>
+        <option value="spmi">SPMI</option>
+        <option value="litnum">Literasi dan Numerasi</option>
+        <option value="lit_paud">Literasi Dasar Pendidik PAUD</option>
+        <option value="digitalisasi">Digitalisasi Pembelajaran</option>
+      </select>
+    </div>
+
+    <div class="card">
+      <h2>Data Peserta</h2>
+      <label class="required">Nama</label>
+      <div class="autocomplete-wrap">
+        <input type="text" id="nama" required autocomplete="off">
+        <div class="suggestions" id="namaSuggestions"></div>
+      </div>
+      <label class="required">Instansi</label>
+      <input type="text" id="instansi" required>
+    </div>
+
+    <div class="card">
+      <h2>Refleksi</h2>
+      <label class="required">Kompetensi materi yang sudah saya kuasai sepenuhnya</label>
+      <textarea id="kompetensiDikuasai" rows="4" required></textarea>
+
+      <label class="required">Materi/submateri yang masih membutuhkan penguatan atau diskusi lebih lanjut bersama tim pengembang</label>
+      <textarea id="materiPenguatan" rows="4" required></textarea>
+
+      <label class="required">Strategi fasilitasi yang akan saya gunakan besok agar peserta tidak jenuh dan mampu menghasilkan produk perencanaan pembelajaran (Backward Design) yang valid</label>
+      <textarea id="strategiFasilitasi" rows="5" required></textarea>
+    </div>
+
+    <div class="submit-area">
+      <button type="submit" class="btn" id="submitBtn">Kirim Refleksi</button>
+      <div class="status" id="statusBox"></div>
+    </div>
+
+  </form>
+
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon">&#10003;</div>
+    <h2>Refleksi Berhasil Terkirim</h2>
+    <p>Terima kasih, refleksi kamu sudah tersimpan.</p>
+    <a href="index.html" class="btn">Kembali ke Menu</a>
+  </div>
+</div>
+
+<script>
+const CONFIG = {
+  SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzy4IIoooYUTTHzI67lch6fAR68ffObe5ZciPA5vZ6zkD0P80iR_E9xAeBLjFzNyKlY/exec"
+};
+
+const JENIS_LABEL = {
+  spmi: "SPMI",
+  litnum: "Literasi dan Numerasi",
+  lit_paud: "Literasi Dasar Pendidik PAUD",
+  digitalisasi: "Digitalisasi Pembelajaran"
+};
+
+const jenisSel = document.getElementById('jenisBimtek');
+const jenisLabelEl = document.getElementById('jenisLabel');
+
+function applyJenis(){
+  jenisLabelEl.textContent = 'Diisi setelah mengkaji seluruh bahan dan PPT (' + JENIS_LABEL[jenisSel.value] + ')';
+}
+jenisSel.addEventListener('change', applyJenis);
+applyJenis();
+
+// ---------------------------------------------------------------------
+// Autocomplete Nama Peserta
+// ---------------------------------------------------------------------
+let pesertaList = [];
+async function loadPesertaList(){
+  try{
+    const res = await fetch(CONFIG.SCRIPT_URL + '?action=getPeserta');
+    const result = await res.json();
+    if(result.status === 'success') pesertaList = result.peserta;
+  }catch(err){
+    console.warn('Gagal memuat daftar peserta, autocomplete nonaktif.', err);
+  }
+}
+loadPesertaList();
+
+const namaInput = document.getElementById('nama');
+const instansiInput = document.getElementById('instansi');
+const suggestBox = document.getElementById('namaSuggestions');
+
+namaInput.addEventListener('input', function(){
+  const q = namaInput.value.trim().toLowerCase();
+  suggestBox.innerHTML = '';
+  if(q.length < 2 || pesertaList.length === 0){
+    suggestBox.classList.remove('active');
+    return;
+  }
+  const matches = pesertaList.filter(p => p.nama.toLowerCase().includes(q)).slice(0, 8);
+  if(matches.length === 0){
+    suggestBox.classList.remove('active');
+    return;
+  }
+  matches.forEach(p => {
+    const item = document.createElement('div');
+    item.className = 'suggestion-item';
+    item.innerHTML = p.nama + '<div class="sug-instansi">' + p.instansi + '</div>';
+    item.addEventListener('click', () => {
+      namaInput.value = p.nama;
+      instansiInput.value = p.instansi;
+      if(p.jenisBimtek && JENIS_LABEL[p.jenisBimtek]){
+        jenisSel.value = p.jenisBimtek;
+        applyJenis();
+      }
+      suggestBox.innerHTML = '';
+      suggestBox.classList.remove('active');
+    });
+    suggestBox.appendChild(item);
+  });
+  suggestBox.classList.add('active');
+});
+
+document.addEventListener('click', function(e){
+  if(e.target !== namaInput) suggestBox.classList.remove('active');
+});
+
+// ---------------------------------------------------------------------
+// Submit
+// ---------------------------------------------------------------------
+async function sendRefleksi(data, attempt){
+  attempt = attempt || 1;
+  try{
+    const res = await fetch(CONFIG.SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(data)
+    });
+    return await res.json();
+  }catch(err){
+    if(attempt < 3){
+      await new Promise(r => setTimeout(r, 1500 * attempt));
+      return sendRefleksi(data, attempt + 1);
+    }
+    throw err;
+  }
+}
+
+document.getElementById('refleksiForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+
+  const submitBtn = document.getElementById('submitBtn');
+  const statusBox = document.getElementById('statusBox');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Mengirim...';
+  statusBox.style.display = 'none';
+
+  const payload = {
+    formType: 'refleksi',
+    jenisBimtek: jenisSel.value,
+    jenisBimtekLabel: JENIS_LABEL[jenisSel.value],
+    nama: namaInput.value.trim(),
+    instansi: instansiInput.value.trim(),
+    kompetensiDikuasai: document.getElementById('kompetensiDikuasai').value.trim(),
+    materiPenguatan: document.getElementById('materiPenguatan').value.trim(),
+    strategiFasilitasi: document.getElementById('strategiFasilitasi').value.trim()
+  };
+
+  try{
+    const result = await sendRefleksi(payload);
+    if(result.status !== 'success') throw new Error(result.message || 'Gagal mengirim.');
+    document.getElementById('refleksiForm').style.display = 'none';
+    document.getElementById('successScreen').style.display = 'block';
+    document.getElementById('successScreen').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }catch(err){
+    statusBox.className = 'status err';
+    statusBox.style.display = 'block';
+    statusBox.textContent = 'Gagal mengirim refleksi. Coba lagi sebentar lagi. (' + err.message + ')';
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Kirim Refleksi';
+  }
+});
+</script>
+</body>
+</html>
